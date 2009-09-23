@@ -1,13 +1,17 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+;#AutoIt3Wrapper_icon=WinLayout.ico
+#AutoIt3Wrapper_outfile=WinLayout.exe
+#AutoIt3Wrapper_Compression=4
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.3
+#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+#AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
 #include <EditConstants.au3>
 #include <StaticConstants.au3>
 #include <IE.au3>
 
-#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Outfile=C:\Program Files\WinLayout.exe
-#AutoIt3Wrapper_Compression=4
-#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 Opt("TrayMenuMode", 1) ; Default tray menu items (Script Paused/Exit) will not be shown.
 
 TrayTip("WinLayout", "Loading ...", 0, 1)
@@ -47,6 +51,17 @@ Local $ActiveWindowHandle = -1
 Local $LastHotKey = ""
 Local $ActionToPerform = ""
 
+HotKeySet("#p", "ActiveWindowShowPositionAndSize")
+
+HotKeySet("#1", "ActiveWindowMoveToBottomLeft")
+HotKeySet("#2", "ActiveWindowMoveToBottom")
+HotKeySet("#3", "ActiveWindowMoveToBottomRight")
+HotKeySet("#4", "ActiveWindowMoveToLeft")
+HotKeySet("#5", "ActiveWindowMoveToCentre")
+HotKeySet("#6", "ActiveWindowMoveToRight")
+HotKeySet("#7", "ActiveWindowMoveToTopLeft")
+HotKeySet("#8", "ActiveWindowMoveToTop")
+HotKeySet("#9", "ActiveWindowMoveToTopRight")
 HotKeySet("#{NUMPAD1}", "ActiveWindowMoveToBottomLeft")
 HotKeySet("#{NUMPAD2}", "ActiveWindowMoveToBottom")
 HotKeySet("#{NUMPAD3}", "ActiveWindowMoveToBottomRight")
@@ -56,6 +71,16 @@ HotKeySet("#{NUMPAD6}", "ActiveWindowMoveToRight")
 HotKeySet("#{NUMPAD7}", "ActiveWindowMoveToTopLeft")
 HotKeySet("#{NUMPAD8}", "ActiveWindowMoveToTop")
 HotKeySet("#{NUMPAD9}", "ActiveWindowMoveToTopRight")
+
+HotKeySet("#!1", "ActiveWindowMoveAndResizeToBottomLeft")
+HotKeySet("#!2", "ActiveWindowMoveAndResizeToBottom")
+HotKeySet("#!3", "ActiveWindowMoveAndResizeToBottomRight")
+HotKeySet("#!4", "ActiveWindowMoveAndResizeToLeft")
+HotKeySet("#!5", "ActiveWindowMoveAndResizeToCentre")
+HotKeySet("#!6", "ActiveWindowMoveAndResizeToRight")
+HotKeySet("#!7", "ActiveWindowMoveAndResizeToTopLeft")
+HotKeySet("#!8", "ActiveWindowMoveAndResizeToTop")
+HotKeySet("#!9", "ActiveWindowMoveAndResizeToTopRight")
 HotKeySet("#!{NUMPAD1}", "ActiveWindowMoveAndResizeToBottomLeft")
 HotKeySet("#!{NUMPAD2}", "ActiveWindowMoveAndResizeToBottom")
 HotKeySet("#!{NUMPAD3}", "ActiveWindowMoveAndResizeToBottomRight")
@@ -65,6 +90,16 @@ HotKeySet("#!{NUMPAD6}", "ActiveWindowMoveAndResizeToRight")
 HotKeySet("#!{NUMPAD7}", "ActiveWindowMoveAndResizeToTopLeft")
 HotKeySet("#!{NUMPAD8}", "ActiveWindowMoveAndResizeToTop")
 HotKeySet("#!{NUMPAD9}", "ActiveWindowMoveAndResizeToTopRight")
+
+HotKeySet("^#1", "ActiveWindowSnapToBottomLeft")
+HotKeySet("^#2", "ActiveWindowSnapToBottom")
+HotKeySet("^#3", "ActiveWindowSnapToBottomRight")
+HotKeySet("^#4", "ActiveWindowSnapToLeft")
+HotKeySet("^#5", "ActiveWindowSnapToCentre")
+HotKeySet("^#6", "ActiveWindowSnapToRight")
+HotKeySet("^#7", "ActiveWindowSnapToTopLeft")
+HotKeySet("^#8", "ActiveWindowSnapToTop")
+HotKeySet("^#9", "ActiveWindowSnapToTopRight")
 HotKeySet("^#{NUMPAD1}", "ActiveWindowSnapToBottomLeft")
 HotKeySet("^#{NUMPAD2}", "ActiveWindowSnapToBottom")
 HotKeySet("^#{NUMPAD3}", "ActiveWindowSnapToBottomRight")
@@ -74,8 +109,12 @@ HotKeySet("^#{NUMPAD6}", "ActiveWindowSnapToRight")
 HotKeySet("^#{NUMPAD7}", "ActiveWindowSnapToTopLeft")
 HotKeySet("^#{NUMPAD8}", "ActiveWindowSnapToTop")
 HotKeySet("^#{NUMPAD9}", "ActiveWindowSnapToTopRight")
+
+HotKeySet("#-", "ActiveWindowDecreaseSize")
+HotKeySet("#=", "ActiveWindowIncreaseSize")
 HotKeySet("#{NUMPADSUB}", "ActiveWindowDecreaseSize")
 HotKeySet("#{NUMPADADD}", "ActiveWindowIncreaseSize")
+
 HotKeySet("#{LEFT}", "ActiveWindowMoveLeftOnePixel")
 HotKeySet("#{RIGHT}", "ActiveWindowMoveRightOnePixel")
 HotKeySet("#{UP}", "ActiveWindowMoveUpOnePixel")
@@ -123,35 +162,36 @@ Exit
 Func ShortcutsFormShow()
 	$ShortcutsForm = GUICreate("WinLayout - Shortcuts", 490, 600)
 	$ShortcutsEditList = GUICtrlCreateEdit("", 10, 10, 470, 540, $ES_READONLY)
-	GUICtrlSetData($ShortcutsEditList, StringFormat("WIN + NUMPAD1 = Move active window to bottom left\r\n" & _
-                                                    "WIN + NUMPAD2 = Move active window to bottom\r\n" & _
-                                                    "WIN + NUMPAD3 = Move active window to bottom right\r\n" & _
-                                                    "WIN + NUMPAD4 = Move active window to left\r\n" & _
-                                                    "WIN + NUMPAD5 = Move active window to centre\r\n" & _
-                                                    "WIN + NUMPAD6 = Move active window to right\r\n" & _
-                                                    "WIN + NUMPAD7 = Move active window to top left\r\n" & _
-                                                    "WIN + NUMPAD8 = Move active window to top\r\n" & _
-                                                    "WIN + NUMPAD9 = Move active window to top right\r\n" & _
-                                                    "WIN + ALT + NUMPAD1 = Move active window to bottom left and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD2 = Move active window to bottom and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD3 = Move active window to bottom right and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD4 = Move active window to left and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD5 = Move active window to centre and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD6 = Move active window to right and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD7 = Move active window to top left and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD8 = Move active window to top and resize it\r\n" & _
-                                                    "WIN + ALT + NUMPAD9 = Move active window to top right and resize it\r\n" & _
-                                                    "CTRL + WIN + NUMPAD1 = Snap active window to bottom left\r\n" & _
-                                                    "CTRL + WIN + NUMPAD2 = Snap active window to bottom\r\n" & _
-                                                    "CTRL + WIN + NUMPAD3 = Snap active window to bottom right\r\n" & _
-                                                    "CTRL + WIN + NUMPAD4 = Snap active window to left\r\n" & _
-                                                    "CTRL + WIN + NUMPAD5 = Snap active window to centre\r\n" & _
-                                                    "CTRL + WIN + NUMPAD6 = Snap active window to right\r\n" & _
-                                                    "CTRL + WIN + NUMPAD7 = Snap active window to top left\r\n" & _
-                                                    "CTRL + WIN + NUMPAD8 = Snap active window to top\r\n" & _
-                                                    "CTRL + WIN + NUMPAD9 = Snap active window to top right\r\n" & _
-                                                    "WIN + NUMPAD- = Decrease active window size\r\n" & _
-                                                    "WIN + NUMPAD+ = Increase active window size\r\n" & _
+	GUICtrlSetData($ShortcutsEditList, StringFormat("WIN + P = Show active window position and size\r\n" & _
+                                                    "WIN + 1 or WIN + NUMPAD1 = Move active window to bottom left\r\n" & _
+                                                    "WIN + 2 or WIN + NUMPAD2 = Move active window to bottom\r\n" & _
+                                                    "WIN + 3 or WIN + NUMPAD3 = Move active window to bottom right\r\n" & _
+                                                    "WIN + 4 or WIN + NUMPAD4 = Move active window to left\r\n" & _
+                                                    "WIN + 5 or WIN + NUMPAD5 = Move active window to centre\r\n" & _
+                                                    "WIN + 6 or WIN + NUMPAD6 = Move active window to right\r\n" & _
+                                                    "WIN + 7 or WIN + NUMPAD7 = Move active window to top left\r\n" & _
+                                                    "WIN + 8 or WIN + NUMPAD8 = Move active window to top\r\n" & _
+                                                    "WIN + 9 or WIN + NUMPAD9 = Move active window to top right\r\n" & _
+                                                    "WIN + ALT + 1 or WIN + ALT + NUMPAD1 = Move active window to bottom left and resize it\r\n" & _
+                                                    "WIN + ALT + 2 or WIN + ALT + NUMPAD2 = Move active window to bottom and resize it\r\n" & _
+                                                    "WIN + ALT + 3 or WIN + ALT + NUMPAD3 = Move active window to bottom right and resize it\r\n" & _
+                                                    "WIN + ALT + 4 or WIN + ALT + NUMPAD4 = Move active window to left and resize it\r\n" & _
+                                                    "WIN + ALT + 5 or WIN + ALT + NUMPAD5 = Move active window to centre and resize it\r\n" & _
+                                                    "WIN + ALT + 6 or WIN + ALT + NUMPAD6 = Move active window to right and resize it\r\n" & _
+                                                    "WIN + ALT + 7 or WIN + ALT + NUMPAD7 = Move active window to top left and resize it\r\n" & _
+                                                    "WIN + ALT + 8 or WIN + ALT + NUMPAD8 = Move active window to top and resize it\r\n" & _
+                                                    "WIN + ALT + 9 or WIN + ALT + NUMPAD9 = Move active window to top right and resize it\r\n" & _
+                                                    "CTRL + WIN + 1 or CTRL + WIN + NUMPAD1 = Snap active window to bottom left\r\n" & _
+                                                    "CTRL + WIN + 2 or CTRL + WIN + NUMPAD2 = Snap active window to bottom\r\n" & _
+                                                    "CTRL + WIN + 3 or CTRL + WIN + NUMPAD3 = Snap active window to bottom right\r\n" & _
+                                                    "CTRL + WIN + 4 or CTRL + WIN + NUMPAD4 = Snap active window to left\r\n" & _
+                                                    "CTRL + WIN + 5 or CTRL + WIN + NUMPAD5 = Snap active window to centre\r\n" & _
+                                                    "CTRL + WIN + 6 or CTRL + WIN + NUMPAD6 = Snap active window to right\r\n" & _
+                                                    "CTRL + WIN + 7 or CTRL + WIN + NUMPAD7 = Snap active window to top left\r\n" & _
+                                                    "CTRL + WIN + 8 or CTRL + WIN + NUMPAD8 = Snap active window to top\r\n" & _
+                                                    "CTRL + WIN + 9 or CTRL + WIN + NUMPAD9 = Snap active window to top right\r\n" & _
+                                                    "WIN + HIFEN or WIN + NUMPAD- = Decrease active window size\r\n" & _
+                                                    "WIN + EQUAL or WIN + NUMPAD+ = Increase active window size\r\n" & _
                                                     "WIN + LEFT = Move active window left one pixel\r\n" & _
                                                     "WIN + RIGHT = Move active window right one pixel\r\n" & _
                                                     "WIN + UP = Move active window up one pixel\r\n" & _
@@ -269,6 +309,17 @@ Func AvailableAreaInfo()
 	Return $AvailableAreaInfo
 EndFunc
 
+Func ActiveWindowShowPositionAndSize()
+	Local $ActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
+
+	ToolTip($ActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $ActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $ActiveWindowAreaInfo[$conAreaInfoX] & "," & $ActiveWindowAreaInfo[$conAreaInfoY], $ActiveWindowAreaInfo[$conAreaInfoX] + ($ActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $ActiveWindowAreaInfo[$conAreaInfoY] + 20, "", 0, 2)
+    Sleep(2000)
+	ToolTip("")
+
+	$ActiveWindowHandle = WinGetHandle("[ACTIVE]")
+	$LastHotKey = @HotKeyPressed
+EndFunc
+
 Func ActiveWindowMoveToBottomLeft()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
@@ -381,7 +432,7 @@ Func ActiveWindowMoveAndResizeToBottomLeft()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD1}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!1" And $LastHotKey <> "#!{NUMPAD1}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -411,7 +462,7 @@ Func ActiveWindowMoveAndResizeToBottom()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD2}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!2" And $LastHotKey <> "#!{NUMPAD2}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -441,7 +492,7 @@ Func ActiveWindowMoveAndResizeToBottomRight()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD3}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!3" And $LastHotKey <> "#!{NUMPAD3}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -471,7 +522,7 @@ Func ActiveWindowMoveAndResizeToLeft()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD4}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!4" And $LastHotKey <> "#!{NUMPAD4}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -501,7 +552,7 @@ Func ActiveWindowMoveAndResizeToCentre()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD5}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!5" And $LastHotKey <> "#!{NUMPAD5}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -535,7 +586,7 @@ Func ActiveWindowMoveAndResizeToRight()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD6}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!6" And $LastHotKey <> "#!{NUMPAD6}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -565,7 +616,7 @@ Func ActiveWindowMoveAndResizeToTopLeft()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD7}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!7" And $LastHotKey <> "#!{NUMPAD7}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -595,7 +646,7 @@ Func ActiveWindowMoveAndResizeToTop()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD8}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!8" And $LastHotKey <> "#!{NUMPAD8}") Then
 		$ActionToPerform = 1
 	EndIf
 
@@ -625,7 +676,7 @@ Func ActiveWindowMoveAndResizeToTopRight()
 	Local $AvailableAreaInfo = AvailableAreaInfo()
 	Local $NewActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
 
-	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or $LastHotKey <> "#!{NUMPAD9}" Then
+	If $ActiveWindowHandle <> WinGetHandle("[ACTIVE]") Or ($LastHotKey <> "#!9" And $LastHotKey <> "#!{NUMPAD9}") Then
 		$ActionToPerform = 1
 	EndIf
 	
@@ -771,8 +822,8 @@ Func ActiveWindowDecreaseSize()
 	$NewActiveWindowAreaInfo[$conAreaInfoWidth] = $ScreenResolution[$ScreenResolutionToDecreaseSizeTo][$conScreenResolutionWidth]
 	$NewActiveWindowAreaInfo[$conAreaInfoHeight] = $ScreenResolution[$ScreenResolutionToDecreaseSizeTo][$conScreenResolutionHeight]
 	ActiveWindowMoveTo($NewActiveWindowAreaInfo)
-	ToolTip($NewActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $NewActiveWindowAreaInfo[$conAreaInfoHeight], $NewActiveWindowAreaInfo[$conAreaInfoX] + ($NewActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $NewActiveWindowAreaInfo[$conAreaInfoY] + 10, "", 0, 2)
-    Sleep(1000)
+	ToolTip($NewActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $NewActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $NewActiveWindowAreaInfo[$conAreaInfoX] & "," & $NewActiveWindowAreaInfo[$conAreaInfoY], $NewActiveWindowAreaInfo[$conAreaInfoX] + ($NewActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $NewActiveWindowAreaInfo[$conAreaInfoY] + 20, "", 0, 2)
+    Sleep(2000)
 	ToolTip("")
 
 	$ActiveWindowHandle = WinGetHandle("[ACTIVE]")
@@ -805,8 +856,8 @@ Func ActiveWindowIncreaseSize()
 		ActiveWindowSetYBasedOnAlignment($AvailableAreaInfo, $conAlignmentVerticalBottom, $NewActiveWindowAreaInfo)
 	EndIf
 	ActiveWindowMoveTo($NewActiveWindowAreaInfo)
-	ToolTip($NewActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $NewActiveWindowAreaInfo[$conAreaInfoHeight], $NewActiveWindowAreaInfo[$conAreaInfoX] + ($NewActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $NewActiveWindowAreaInfo[$conAreaInfoY] + 10, "", 0, 2)
-    Sleep(1000)
+	ToolTip($NewActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $NewActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $NewActiveWindowAreaInfo[$conAreaInfoX] & "," & $NewActiveWindowAreaInfo[$conAreaInfoY], $NewActiveWindowAreaInfo[$conAreaInfoX] + ($NewActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $NewActiveWindowAreaInfo[$conAreaInfoY] + 20, "", 0, 2)
+    Sleep(2000)
 	ToolTip("")
 
 	$ActiveWindowHandle = WinGetHandle("[ACTIVE]")

@@ -2,7 +2,7 @@
 ;#AutoIt3Wrapper_icon=WinLayout.ico
 #AutoIt3Wrapper_outfile=WinLayout.exe
 #AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.3
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.4
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -310,12 +310,7 @@ Func AvailableAreaInfo()
 EndFunc
 
 Func ActiveWindowShowPositionAndSize()
-	Local $ActiveWindowAreaInfo = WinGetPos("[ACTIVE]")
-
-	ToolTip($ActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $ActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $ActiveWindowAreaInfo[$conAreaInfoX] & "," & $ActiveWindowAreaInfo[$conAreaInfoY], $ActiveWindowAreaInfo[$conAreaInfoX] + ($ActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $ActiveWindowAreaInfo[$conAreaInfoY] + 20, "", 0, 2)
-    Sleep(2000)
-	ToolTip("")
-
+	ShowPositionAndSizeOnTooltip(WinGetPos("[ACTIVE]"))
 	$ActiveWindowHandle = WinGetHandle("[ACTIVE]")
 	$LastHotKey = @HotKeyPressed
 EndFunc
@@ -822,9 +817,7 @@ Func ActiveWindowDecreaseSize()
 	$NewActiveWindowAreaInfo[$conAreaInfoWidth] = $ScreenResolution[$ScreenResolutionToDecreaseSizeTo][$conScreenResolutionWidth]
 	$NewActiveWindowAreaInfo[$conAreaInfoHeight] = $ScreenResolution[$ScreenResolutionToDecreaseSizeTo][$conScreenResolutionHeight]
 	ActiveWindowMoveTo($NewActiveWindowAreaInfo)
-	ToolTip($NewActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $NewActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $NewActiveWindowAreaInfo[$conAreaInfoX] & "," & $NewActiveWindowAreaInfo[$conAreaInfoY], $NewActiveWindowAreaInfo[$conAreaInfoX] + ($NewActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $NewActiveWindowAreaInfo[$conAreaInfoY] + 20, "", 0, 2)
-    Sleep(2000)
-	ToolTip("")
+	ShowPositionAndSizeOnTooltip($NewActiveWindowAreaInfo)
 
 	$ActiveWindowHandle = WinGetHandle("[ACTIVE]")
 	$LastHotKey = @HotKeyPressed
@@ -856,9 +849,7 @@ Func ActiveWindowIncreaseSize()
 		ActiveWindowSetYBasedOnAlignment($AvailableAreaInfo, $conAlignmentVerticalBottom, $NewActiveWindowAreaInfo)
 	EndIf
 	ActiveWindowMoveTo($NewActiveWindowAreaInfo)
-	ToolTip($NewActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $NewActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $NewActiveWindowAreaInfo[$conAreaInfoX] & "," & $NewActiveWindowAreaInfo[$conAreaInfoY], $NewActiveWindowAreaInfo[$conAreaInfoX] + ($NewActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $NewActiveWindowAreaInfo[$conAreaInfoY] + 20, "", 0, 2)
-    Sleep(2000)
-	ToolTip("")
+	ShowPositionAndSizeOnTooltip($NewActiveWindowAreaInfo)
 
 	$ActiveWindowHandle = WinGetHandle("[ACTIVE]")
 	$LastHotKey = @HotKeyPressed
@@ -994,4 +985,18 @@ Func ActiveWindowMoveTo($NewActiveWindowAreaInfo)
 		WinSetState("[ACTIVE]", "", @SW_RESTORE)
 	EndIf
 	WinMove("[ACTIVE]", "", $NewActiveWindowAreaInfo[$conAreaInfoX], $NewActiveWindowAreaInfo[$conAreaInfoY], $NewActiveWindowAreaInfo[$conAreaInfoWidth], $NewActiveWindowAreaInfo[$conAreaInfoHeight])
+EndFunc
+
+Func ShowPositionAndSizeOnTooltip($ActiveWindowAreaInfo)
+	Local $XPosition = 0
+	Local $YPosition = 0
+	If $ActiveWindowAreaInfo[$conAreaInfoX] > 0 Then
+		$XPosition = $ActiveWindowAreaInfo[$conAreaInfoX]
+	EndIf
+	If $ActiveWindowAreaInfo[$conAreaInfoY] > 0 Then
+		$YPosition = $ActiveWindowAreaInfo[$conAreaInfoY]
+	EndIf
+	ToolTip($ActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $ActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $ActiveWindowAreaInfo[$conAreaInfoX] & "," & $ActiveWindowAreaInfo[$conAreaInfoY], $XPosition + ($ActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $YPosition + 10, "", 0, 2)
+    Sleep(2000)
+	ToolTip("")
 EndFunc

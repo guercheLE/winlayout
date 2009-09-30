@@ -1,10 +1,10 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-;#AutoIt3Wrapper_icon=WinLayout.ico
+#AutoIt3Wrapper_icon=WinLayout.ico
 #AutoIt3Wrapper_outfile=WinLayout.exe
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Fileversion=1.0.0.4
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
-#AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
+#AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
@@ -226,8 +226,7 @@ Func AboutFormShow()
 	$AboutForm = GUICreate("WinLayout - About", 324, 234, 303, 219)
 	$GroupBox1 = GUICtrlCreateGroup("", 8, 8, 305, 185)
 	$LogoImage = GUICtrlCreatePic("", 16, 24, 105, 97, BitOR($SS_NOTIFY,$WS_GROUP, $WS_CLIPSIBLINGS))
-	$ProgramNameLabel = GUICtrlCreateLabel("WinLayout", 10, 24, 300, 100, BitOR($ES_CENTER, $WS_GROUP))
-	$ProgramVersionLabel = GUICtrlCreateLabel("1.0.0.0", 10, 48, 300, 100, BitOR($ES_CENTER, $WS_GROUP))
+	$ProgramNameLabel = GUICtrlCreateLabel("WinLayout v1", 10, 24, 300, 100, BitOR($ES_CENTER, $WS_GROUP))
 	$Message = GUICtrlCreateEdit("", 10, 90, 300, 100, BitOR($ES_CENTER, $ES_READONLY), 0)
 	GUICtrlSetData($Message, StringFormat("Written by:\r\nLuciano Evaristo Guerche\r\nhttp://friendfeed.com/guerchele\r\n\r\nUsing:\r\nAutoIt v3\r\nhttp://www.autoitscript.com/autoit3/"))
 	$Button1 = GUICtrlCreateButton("&OK", 128, 200, 75, 25)
@@ -988,13 +987,11 @@ Func ActiveWindowMoveTo($NewActiveWindowAreaInfo)
 EndFunc
 
 Func ShowPositionAndSizeOnTooltip($ActiveWindowAreaInfo)
-	Local $XPosition = 0
-	Local $YPosition = 0
-	If $ActiveWindowAreaInfo[$conAreaInfoX] > 0 Then
-		$XPosition = $ActiveWindowAreaInfo[$conAreaInfoX]
-	EndIf
-	If $ActiveWindowAreaInfo[$conAreaInfoY] > 0 Then
-		$YPosition = $ActiveWindowAreaInfo[$conAreaInfoY]
+	Local $XPosition = $ActiveWindowAreaInfo[$conAreaInfoX]
+	Local $YPosition = $ActiveWindowAreaInfo[$conAreaInfoY]
+	If BitAND(WinGetState("[ACTIVE]"), 32) Then ;32=maximized
+		$XPosition = $XPosition + 8
+		$YPosition = $YPosition + 8
 	EndIf
 	ToolTip($ActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $ActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $ActiveWindowAreaInfo[$conAreaInfoX] & "," & $ActiveWindowAreaInfo[$conAreaInfoY], $XPosition + ($ActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $YPosition + 10, "", 0, 2)
     Sleep(2000)

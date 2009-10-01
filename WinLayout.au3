@@ -2,9 +2,10 @@
 #AutoIt3Wrapper_icon=WinLayout.ico
 #AutoIt3Wrapper_outfile=WinLayout.exe
 #AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.5
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
+#AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
@@ -17,6 +18,10 @@ Opt("TrayMenuMode", 1) ; Default tray menu items (Script Paused/Exit) will not b
 TrayTip("WinLayout", "Loading ...", 0, 1)
 Sleep(1000)
 TrayTip("", "", 0)
+
+Local Const $conMonitorDefaultToNull = 0x00000000
+Local Const $conMonitorDefaultToPrimary = 0x00000001
+Local Const $conMonitorDefaultToNearest = 0x00000002
 
 Local Const $conAreaInfoX = 0
 Local Const $conAreaInfoY = 1
@@ -246,7 +251,7 @@ Func AboutFormShow()
 EndFunc
 
 Func DonateFormShow()
-	$AboutForm = GUICreate("WinLayout - Donate", 324, 234, 303, 219)
+	$DonateForm = GUICreate("WinLayout - Donate", 324, 234, 303, 219)
 	$GroupBox1 = GUICtrlCreateGroup("", 8, 8, 305, 185)
 	$LogoImage = GUICtrlCreatePic("", 16, 24, 105, 97, BitOR($SS_NOTIFY,$WS_GROUP, $WS_CLIPSIBLINGS))
 	$Message = GUICtrlCreateEdit("", 10, 20, 300, 100, BitOR($ES_CENTER, $ES_READONLY), 0)
@@ -271,38 +276,26 @@ Func DonateFormShow()
 		EndSwitch
 	WEnd
 
-	GUIDelete($AboutForm)
+	GUIDelete($DonateForm)
 EndFunc
 
 Func AvailableAreaInfo()
-	Local $DesktopAreaInfo = WinGetPos("Program Manager")
-	Local $TaskbarAreaInfo = WinGetPos("[CLASS:Shell_TrayWnd]")
+	$ActiveWindowHandle = WinGetHandle("[ACTIVE]")
+
+	Local $Monitor = DllCall("user32.dll", "hwnd", "MonitorFromWindow", "hwnd", $ActiveWindowHandle, "int", $conMonitorDefaultToNearest)
 	Local $AvailableAreaInfo[4]
 
-	If $TaskbarAreaInfo[$conAreaInfoX] <= 0 Then
-		If $TaskbarAreaInfo[$conAreaInfoY] <= 0 Then
-			If $TaskbarAreaInfo[$conAreaInfoWidth] > $TaskbarAreaInfo[$conAreaInfoHeight] Then ;Taskbar on top side
-				$AvailableAreaInfo[$conAreaInfoX] = $DesktopAreaInfo[$conAreaInfoX]
-				$AvailableAreaInfo[$conAreaInfoY] = $DesktopAreaInfo[$conAreaInfoY] + ($TaskbarAreaInfo[$conAreaInfoHeight] + $TaskbarAreaInfo[$conAreaInfoY])
-				$AvailableAreaInfo[$conAreaInfoWidth] = $DesktopAreaInfo[$conAreaInfoWidth]
-				$AvailableAreaInfo[$conAreaInfoHeight] = $DesktopAreaInfo[$conAreaInfoHeight] - ($TaskbarAreaInfo[$conAreaInfoHeight] + $TaskbarAreaInfo[$conAreaInfoY])
-			Else ;Taskbar on left side
-				$AvailableAreaInfo[$conAreaInfoX] = $DesktopAreaInfo[$conAreaInfoX] + ($TaskbarAreaInfo[$conAreaInfoWidth] + $TaskbarAreaInfo[$conAreaInfoX])
-				$AvailableAreaInfo[$conAreaInfoY] = $DesktopAreaInfo[$conAreaInfoY]
-				$AvailableAreaInfo[$conAreaInfoWidth] = $DesktopAreaInfo[$conAreaInfoWidth] - ($TaskbarAreaInfo[$conAreaInfoWidth] + $TaskbarAreaInfo[$conAreaInfoX])
-				$AvailableAreaInfo[$conAreaInfoHeight] = $DesktopAreaInfo[$conAreaInfoHeight]
-			EndIf
-		Else ;Taskbar on bottom side
-			$AvailableAreaInfo[$conAreaInfoX] = $DesktopAreaInfo[$conAreaInfoX]
-			$AvailableAreaInfo[$conAreaInfoY] = 0
-			$AvailableAreaInfo[$conAreaInfoWidth] = $DesktopAreaInfo[$conAreaInfoWidth]
-			$AvailableAreaInfo[$conAreaInfoHeight] = $TaskbarAreaInfo[$conAreaInfoY]
+	If $Monitor[0] <> 0 Then
+		Local $MonitorInfoEx = DllStructCreate("dword;int[4];int[4];dword;char[32]")
+		DllStructSetData($MonitorInfoEx, 1, DllStructGetSize($MonitorInfoEx))
+
+		Local $Result = DllCall("user32.dll", "int", "GetMonitorInfo", "hwnd", $Monitor[0], "ptr", DllStructGetPtr($MonitorInfoEx))
+		If $Result[0] = 1 Then
+			$AvailableAreaInfo[$conAreaInfoX] = DllStructGetData($MonitorInfoEx, 3, 1)
+			$AvailableAreaInfo[$conAreaInfoY] = DllStructGetData($MonitorInfoEx, 3, 2)
+			$AvailableAreaInfo[$conAreaInfoWidth] = DllStructGetData($MonitorInfoEx, 3, 3) - DllStructGetData($MonitorInfoEx, 3, 1)
+			$AvailableAreaInfo[$conAreaInfoHeight] = DllStructGetData($MonitorInfoEx, 3, 4) - DllStructGetData($MonitorInfoEx, 3, 2)
 		EndIf
-	Else ;Taskbar on right side
-		$AvailableAreaInfo[$conAreaInfoX] = 0
-		$AvailableAreaInfo[$conAreaInfoY] = 0
-		$AvailableAreaInfo[$conAreaInfoWidth] = $TaskbarAreaInfo[$conAreaInfoX]
-		$AvailableAreaInfo[$conAreaInfoHeight] = $DesktopAreaInfo[$conAreaInfoHeight]
 	EndIf
 
 	Return $AvailableAreaInfo
@@ -980,7 +973,7 @@ Func ActiveWindowSetYBasedOnAlignment($AvailableAreaInfo, $VerticalAlignment, By
 EndFunc
 
 Func ActiveWindowMoveTo($NewActiveWindowAreaInfo)
-	If BitAND(WinGetState("[ACTIVE]"), 16) Or BitAND(WinGetState("[ACTIVE]"), 32) Then ;16 = minimized 32=maximized
+	If BitAND(WinGetState("[ACTIVE]"), 16) Or BitAND(WinGetState("[ACTIVE]"), 32) Then ;16=minimized 32=maximized
 		WinSetState("[ACTIVE]", "", @SW_RESTORE)
 	EndIf
 	WinMove("[ACTIVE]", "", $NewActiveWindowAreaInfo[$conAreaInfoX], $NewActiveWindowAreaInfo[$conAreaInfoY], $NewActiveWindowAreaInfo[$conAreaInfoWidth], $NewActiveWindowAreaInfo[$conAreaInfoHeight])

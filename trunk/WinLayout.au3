@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=WinLayout.ico
 #AutoIt3Wrapper_outfile=WinLayout.exe
 #AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.5
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.6
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
@@ -12,6 +12,7 @@
 #include <EditConstants.au3>
 #include <StaticConstants.au3>
 #include <IE.au3>
+#Include <Constants.au3>
 
 Opt("TrayMenuMode", 1) ; Default tray menu items (Script Paused/Exit) will not be shown.
 
@@ -136,6 +137,9 @@ HotKeySet("^#{DOWN}", "ActiveWindowDecreaseHeightByOnePixelAndMoveDownOnePixel")
 Local $ShortcutsFormTrayItem = TrayCreateItem("Shortcuts...")
 Local $AboutTrayItem = TrayCreateItem("About...")
 TrayCreateItem("")
+Local $RunOnStartupTrayItem = TrayCreateItem("Run on startup")
+RunOnStartupTrayItemSetState($RunOnStartupTrayItem)
+TrayCreateItem("")
 Local $DonateTrayItem = TrayCreateItem("Donate...")
 TrayCreateItem("")
 Local $ExitTrayItem = TrayCreateItem("Exit")
@@ -153,6 +157,9 @@ While 1
 		Case $TrayMessage = $AboutTrayItem
 			AboutFormShow()
 
+		Case $TrayMessage = $RunOnStartupTrayItem
+			RunOnStartupTrayItemSaveOrDeleteFromWindowsRegister($RunOnStartupTrayItem)
+
 		Case $TrayMessage = $DonateTrayItem
 			DonateFormShow()
 
@@ -163,6 +170,23 @@ While 1
 WEnd
 
 Exit
+
+Func RunOnStartupTrayItemSaveOrDeleteFromWindowsRegister($RunOnStartupTrayItem)
+	If RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run", "WinLayout") = @ScriptFullPath Then
+		RegDelete("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run", "WinLayout")
+	Else
+		RegWrite("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run", "WinLayout", "REG_SZ", @ScriptFullPath)
+	EndIf
+	RunOnStartupTrayItemSetState($RunOnStartupTrayItem)
+EndFunc
+
+Func RunOnStartupTrayItemSetState($RunOnStartupTrayItem)
+	If RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run", "WinLayout") = @ScriptFullPath Then
+		TrayItemSetState($RunOnStartupTrayItem, $TRAY_CHECKED)
+	Else
+		TrayItemSetState($RunOnStartupTrayItem, $TRAY_UNCHECKED)
+	EndIf
+EndFunc
 
 Func ShortcutsFormShow()
 	$ShortcutsForm = GUICreate("WinLayout - Shortcuts", 490, 600)

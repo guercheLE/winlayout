@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=WinLayout.ico
 #AutoIt3Wrapper_outfile=WinLayout.exe
 #AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.6
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.7
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
@@ -15,6 +15,8 @@
 #Include <Constants.au3>
 
 Opt("TrayMenuMode", 1) ; Default tray menu items (Script Paused/Exit) will not be shown.
+
+TraySetToolTip("WinLayout")
 
 TrayTip("WinLayout", "Loading ...", 0, 1)
 Sleep(1000)
@@ -57,7 +59,12 @@ Local $ActiveWindowHandle = -1
 Local $LastHotKey = ""
 Local $ActionToPerform = ""
 
+
+
+HotKeySet("#o", "ActiveWindowMaximize")
 HotKeySet("#p", "ActiveWindowShowPositionAndSize")
+HotKeySet("#x", "ActiveWindowClose")
+HotKeySet("#z", "ActiveWindowMinimize")
 
 HotKeySet("#1", "ActiveWindowMoveToBottomLeft")
 HotKeySet("#2", "ActiveWindowMoveToBottom")
@@ -191,7 +198,10 @@ EndFunc
 Func ShortcutsFormShow()
 	$ShortcutsForm = GUICreate("WinLayout - Shortcuts", 490, 600)
 	$ShortcutsEditList = GUICtrlCreateEdit("", 10, 10, 470, 540, $ES_READONLY)
-	GUICtrlSetData($ShortcutsEditList, StringFormat("WIN + P = Show active window position and size\r\n" & _
+	GUICtrlSetData($ShortcutsEditList, StringFormat("WIN + O = Maximize active window\r\n" & _
+                                                    "WIN + P = Show active window position and size\r\n" & _
+                                                    "WIN + X = Close active window\r\n" & _
+                                                    "WIN + Z = Minimize active window\r\n" & _
                                                     "WIN + 1 or WIN + NUMPAD1 = Move active window to bottom left\r\n" & _
                                                     "WIN + 2 or WIN + NUMPAD2 = Move active window to bottom\r\n" & _
                                                     "WIN + 3 or WIN + NUMPAD3 = Move active window to bottom right\r\n" & _
@@ -1013,4 +1023,16 @@ Func ShowPositionAndSizeOnTooltip($ActiveWindowAreaInfo)
 	ToolTip($ActiveWindowAreaInfo[$conAreaInfoWidth] & " x " & $ActiveWindowAreaInfo[$conAreaInfoHeight] & " @ " & $ActiveWindowAreaInfo[$conAreaInfoX] & "," & $ActiveWindowAreaInfo[$conAreaInfoY], $XPosition + ($ActiveWindowAreaInfo[$conAreaInfoWidth] / 2), $YPosition + 10, "", 0, 2)
     Sleep(2000)
 	ToolTip("")
+EndFunc
+
+Func ActiveWindowMaximize()
+	WinSetState("[ACTIVE]", "", @SW_MAXIMIZE)
+EndFunc
+
+Func ActiveWindowClose()
+	WinClose("[ACTIVE]")
+EndFunc
+
+Func ActiveWindowMinimize()
+	WinSetState("[ACTIVE]", "", @SW_MINIMIZE)
 EndFunc
